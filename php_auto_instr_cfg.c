@@ -16,32 +16,134 @@
 	ZEND_PARSE_PARAMETERS_END()
 #endif
 
-/* {{{ void test1() */
-PHP_FUNCTION(test1)
+void (*original_zend_execute_ex) (zend_execute_data *execute_data);
+void (*original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
+void new_execute_internal(zend_execute_data *execute_data, zval *return_value);
+void execute_ex(zend_execute_data *execute_data);
+
+#define DYNAMIC_MALLOC_SPRINTF(destString, sizeNeeded, fmt, ...) \
+    sizeNeeded = snprintf(NULL, 0, fmt, ##__VA_ARGS__) + 1; \
+    destString = (char*)malloc(sizeNeeded); \
+    snprintf(destString, sizeNeeded, fmt, ##__VA_ARGS__)
+
+FILE *fp;
+HashTable *function_set;
+
+const char* get_function_name(zend_execute_data *execute_data)
 {
-	ZEND_PARSE_PARAMETERS_NONE();
+	if (!execute_data->func) {
+		return strdup("");
+	}
 
-	php_printf("The extension %s is loaded and working!\r\n", "php_auto_instr_cfg");
+	if (execute_data->func->common.scope && execute_data->func->common.fn_flags & ZEND_ACC_STATIC) {
+		int len = 0;
+		char *ret = NULL;
+		DYNAMIC_MALLOC_SPRINTF(ret, len, "%s::%s",
+			ZSTR_VAL(Z_CE(execute_data->This)->name),
+			ZSTR_VAL(execute_data->func->common.function_name)
+		);
+		return ret;
+	}
+
+	if (Z_TYPE(execute_data->This) == IS_OBJECT) {
+		int len = 0;
+		char *ret = NULL;
+		DYNAMIC_MALLOC_SPRINTF(ret, len, "%s->%s",
+			ZSTR_VAL(execute_data->func->common.scope->name),
+			ZSTR_VAL(execute_data->func->common.function_name)
+		);
+		return ret;
+	}
+
+	if (execute_data->func->common.function_name) {
+		return strdup(ZSTR_VAL(execute_data->func->common.function_name));
+	}
+	return strdup("");
 }
-/* }}} */
 
-/* {{{ string test2( [ string $var ] ) */
-PHP_FUNCTION(test2)
+void register_execute_ex()
 {
-	char *var = "World";
-	size_t var_len = sizeof("World") - 1;
-	zend_string *retval;
+	//php_printf("register_execute_ex");
+	fp = fopen( "functions.log" , "w" );
 
-	ZEND_PARSE_PARAMETERS_START(0, 1)
-		Z_PARAM_OPTIONAL
-		Z_PARAM_STRING(var, var_len)
-	ZEND_PARSE_PARAMETERS_END();
+	ALLOC_HASHTABLE(function_set);
+	zend_hash_init(function_set, 0, NULL, ZVAL_PTR_DTOR, 0);
 
-	retval = strpprintf(0, "Hello %s", var);
+	original_zend_execute_internal = zend_execute_internal;
+	zend_execute_internal = new_execute_internal;
 
-	RETURN_STR(retval);
+	original_zend_execute_ex = zend_execute_ex;
+	zend_execute_ex = execute_ex;
 }
-/* }}}*/
+
+void unregister_execute_ex()
+{
+	//php_printf("unregister_execute_ex");
+	fclose(fp);
+
+	zend_hash_destroy(function_set);
+	FREE_HASHTABLE(function_set);
+
+	zend_execute_internal = original_zend_execute_internal;
+	zend_execute_ex = original_zend_execute_ex;
+}
+
+void execute_ex(zend_execute_data *execute_data)
+{
+	const char *function_name;
+
+	int argc;
+	zval *argv = NULL;
+	function_name = get_function_name(execute_data);
+	if (strlen(function_name) != 0) {
+		//php_printf("\nCalled : %s\n", function_name);
+		fwrite(function_name , 1 , strlen(function_name) , fp );
+		fwrite("\n", sizeof(char), 1, fp);
+		zval* val;
+		zend_string *function_name_zend = zend_string_init(function_name, strlen(function_name), 0);
+		//zend_hash_update(function_set, function_name_zend, val);
+		zend_string_release(function_name_zend);
+
+	}
+	original_zend_execute_ex(execute_data);
+	free((void*) function_name);
+}
+
+void new_execute_internal(zend_execute_data *execute_data, zval *return_value)
+{
+	const char *function_name;
+
+	int argc;
+	zval *argv = NULL;
+	function_name = get_function_name(execute_data);
+	if (strlen(function_name) != 0) {
+		//php_printf("\nCalled : %s\n", function_name);
+		fwrite(function_name , 1 , strlen(function_name) , fp );
+		fwrite("\n", sizeof(char), 1, fp);
+		zend_string *function_name_zend = zend_string_init(function_name, strlen(function_name), 0);
+		//zend_hash_update(function_set, function_name_zend, val);
+		zend_string_release(function_name_zend);
+	}
+
+	if (original_zend_execute_internal) {
+        original_zend_execute_internal(execute_data, return_value);
+    } else {
+        execute_internal(execute_data, return_value);
+    }
+	free((void*) function_name);
+}
+
+static PHP_MINIT_FUNCTION(php_auto_instr_cfg)
+{
+	register_execute_ex();
+	return SUCCESS;
+}
+
+static PHP_MSHUTDOWN_FUNCTION(php_auto_instr_cfg)
+{
+	unregister_execute_ex();
+	return SUCCESS;
+}
 
 /* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(php_auto_instr_cfg)
@@ -68,7 +170,7 @@ zend_module_entry php_auto_instr_cfg_module_entry = {
 	STANDARD_MODULE_HEADER,
 	"php_auto_instr_cfg",					/* Extension name */
 	ext_functions,					/* zend_function_entry */
-	NULL,							/* PHP_MINIT - Module initialization */
+	PHP_MINIT(php_auto_instr_cfg),							/* PHP_MINIT - Module initialization */
 	NULL,							/* PHP_MSHUTDOWN - Module shutdown */
 	PHP_RINIT(php_auto_instr_cfg),			/* PHP_RINIT - Request initialization */
 	NULL,							/* PHP_RSHUTDOWN - Request shutdown */
