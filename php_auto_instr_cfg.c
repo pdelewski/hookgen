@@ -161,11 +161,10 @@ void execute_ex(zend_execute_data *execute_data) {
   if (function_name && strlen(function_name) > 0) {
     head = push_on_stack(head, function_name);
   }
-  traverse(head);
+
   original_zend_execute_ex(execute_data);
-
+  traverse(head);
   head = pop_from_stack(head);
-
   free((void *)function_name);
 }
 
@@ -179,15 +178,14 @@ void new_execute_internal(zend_execute_data *execute_data, zval *return_value) {
   if (function_name && strlen(function_name) > 0) {
     head = push_on_stack(head, function_name);
   }
-  traverse(head);
+
   if (original_zend_execute_internal) {
     original_zend_execute_internal(execute_data, return_value);
   } else {
     execute_internal(execute_data, return_value);
   }
-
+  traverse(head);
   head = pop_from_stack(head);
-
   free((void *)function_name);
 }
 
