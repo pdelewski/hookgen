@@ -28,7 +28,7 @@ void execute_ex(zend_execute_data *execute_data);
   snprintf(destString, sizeNeeded, fmt, ##__VA_ARGS__)
 
 FILE *fp;
-HashTable *function_set;
+HashTable function_set;
 
 const char *get_function_name(zend_execute_data *execute_data) {
   if (!execute_data->func) {
@@ -48,12 +48,13 @@ const char *get_function_name(zend_execute_data *execute_data) {
   if (Z_TYPE(execute_data->This) == IS_OBJECT) {
     int len = 0;
     char *ret = NULL;
-    DYNAMIC_MALLOC_SPRINTF(ret, len, "%s->%s",
-                           ZSTR_VAL(execute_data->func->common.scope->name),
-                           ZSTR_VAL(execute_data->func->common.function_name));
+    if (execute_data->func->common.function_name) {
+      DYNAMIC_MALLOC_SPRINTF(
+          ret, len, "%s->%s", ZSTR_VAL(execute_data->func->common.scope->name),
+          ZSTR_VAL(execute_data->func->common.function_name));
+    }
     return ret;
   }
-
   if (execute_data->func->common.function_name) {
     return strdup(ZSTR_VAL(execute_data->func->common.function_name));
   }
@@ -64,8 +65,7 @@ void register_execute_ex() {
   // php_printf("register_execute_ex");
   fp = fopen("functions.log", "w");
 
-  ALLOC_HASHTABLE(function_set);
-  zend_hash_init(function_set, 0, NULL, NULL, 0);
+  zend_hash_init(&function_set, 0, NULL, NULL, 0);
 
   original_zend_execute_internal = zend_execute_internal;
   zend_execute_internal = new_execute_internal;
@@ -78,11 +78,29 @@ void unregister_execute_ex() {
   // php_printf("unregister_execute_ex");
   fclose(fp);
 
-  zend_hash_destroy(function_set);
-  FREE_HASHTABLE(function_set);
+  zend_hash_destroy(&function_set);
 
   zend_execute_internal = original_zend_execute_internal;
   zend_execute_ex = original_zend_execute_ex;
+}
+
+void update_function_set(const char *function_name) {
+  if (function_name && strlen(function_name) != 0) {
+    // php_printf("\nCalled : %s\n", function_name);
+    zval *val;
+    zend_string *function_name_zend =
+        zend_string_init(function_name, strlen(function_name), 0);
+    if (!zend_hash_exists(&function_set, function_name_zend)) {
+      fwrite(function_name, 1, strlen(function_name), fp);
+      fwrite("\n", sizeof(char), 1, fp);
+
+      zval tmp;
+      ZVAL_STR(&tmp, function_name_zend);
+      /* Add the wrapped zend_string to the HashTable */
+      zend_hash_add(&function_set, function_name_zend, &tmp);
+    }
+    zend_string_release(function_name_zend);
+  }
 }
 
 void execute_ex(zend_execute_data *execute_data) {
@@ -91,16 +109,7 @@ void execute_ex(zend_execute_data *execute_data) {
   int argc;
   zval *argv = NULL;
   function_name = get_function_name(execute_data);
-  if (strlen(function_name) != 0) {
-    // php_printf("\nCalled : %s\n", function_name);
-    fwrite(function_name, 1, strlen(function_name), fp);
-    fwrite("\n", sizeof(char), 1, fp);
-    zval *val;
-    zend_string *function_name_zend =
-        zend_string_init(function_name, strlen(function_name), 0);
-    // zend_hash_add_or_update(function_set, function_name_zend, val, 0);
-    zend_string_release(function_name_zend);
-  }
+  update_function_set(function_name);
   original_zend_execute_ex(execute_data);
   free((void *)function_name);
 }
@@ -111,16 +120,7 @@ void new_execute_internal(zend_execute_data *execute_data, zval *return_value) {
   int argc;
   zval *argv = NULL;
   function_name = get_function_name(execute_data);
-  if (strlen(function_name) != 0) {
-    // php_printf("\nCalled : %s\n", function_name);
-    fwrite(function_name, 1, strlen(function_name), fp);
-    fwrite("\n", sizeof(char), 1, fp);
-    zval *val;
-    zend_string *function_name_zend =
-        zend_string_init(function_name, strlen(function_name), 0);
-    // zend_hash_add_or_update(function_set, function_name_zend, val, 0);
-    zend_string_release(function_name_zend);
-  }
+  update_function_set(function_name);
 
   if (original_zend_execute_internal) {
     original_zend_execute_internal(execute_data, return_value);
