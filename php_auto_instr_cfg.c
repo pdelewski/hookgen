@@ -70,7 +70,12 @@ void traverse(struct stack *head) {
   if (current && current->size >= 0) {
     fwrite("stack:\n", 6, 1, fp);
   }
+  int depth = 0;
   while (current) {
+	if (depth > 1) {
+		break;
+	}
+	++depth;
     fwrite("\t", sizeof(char), 1, fp);
     fwrite(current->function_name, 1, strlen(current->function_name), fp);
     fwrite("\n", sizeof(char), 1, fp);
