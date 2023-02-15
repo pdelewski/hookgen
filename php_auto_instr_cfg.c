@@ -207,24 +207,6 @@ static PHP_MINIT_FUNCTION(php_auto_instr_cfg) {
   return SUCCESS;
 }
 
-static PHP_MSHUTDOWN_FUNCTION(php_auto_instr_cfg) {
-  //   zend_ulong idx;
-  //   zend_string *key;
-  //   zval *val;
-
-  //   char dump_function_set[20] = "dump_function_set\0";
-  //   fwrite(dump_function_set, 1, strlen(dump_function_set), fp);
-  //   fwrite("\n", sizeof(char), 1, fp);
-  //   ZEND_HASH_FOREACH_KEY_VAL(&function_set, idx, key, val) {
-  //     if (key) {
-  // 		fwrite(ZSTR_VAL(key), 1, strlen(ZSTR_VAL(key)), fp);
-  // 		fwrite("\n", sizeof(char), 1, fp);
-  //     }
-  //   } ZEND_HASH_FOREACH_END();
-  //   unregister_execute_ex();
-  return SUCCESS;
-}
-
 /* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(php_auto_instr_cfg) {
 #if defined(ZTS) && defined(COMPILE_DL_PHP_AUTO_INSTR_CFG)
@@ -234,24 +216,6 @@ PHP_RINIT_FUNCTION(php_auto_instr_cfg) {
   return SUCCESS;
 }
 /* }}} */
-
-PHP_RSHUTDOWN_FUNCTION(php_auto_instr_cfg) {
-  //   zend_ulong idx;
-  //   zend_string *key;
-  //   zval *val;
-
-  //   char dump_function_set[20] = "dump_function_set\0";
-  //   fwrite(dump_function_set, 1, strlen(dump_function_set), fp);
-  //   fwrite("\n", sizeof(char), 1, fp);
-  //   ZEND_HASH_FOREACH_KEY_VAL(&function_set, idx, key, val) {
-  //     if (key) {
-  // 		fwrite(ZSTR_VAL(key), 1, strlen(ZSTR_VAL(key)), fp);
-  // 		fwrite("\n", sizeof(char), 1, fp);
-  //     }
-  //   } ZEND_HASH_FOREACH_END();
-  //   unregister_execute_ex();
-  return SUCCESS;
-}
 
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(php_auto_instr_cfg) {
@@ -264,12 +228,12 @@ PHP_MINFO_FUNCTION(php_auto_instr_cfg) {
 /* {{{ php_auto_instr_cfg_module_entry */
 zend_module_entry php_auto_instr_cfg_module_entry = {
     STANDARD_MODULE_HEADER,
-    "php_auto_instr_cfg",              /* Extension name */
-    ext_functions,                     /* zend_function_entry */
-    PHP_MINIT(php_auto_instr_cfg),     /* PHP_MINIT - Module initialization */
-    PHP_MSHUTDOWN(php_auto_instr_cfg), /* PHP_MSHUTDOWN - Module shutdown */
-    PHP_RINIT(php_auto_instr_cfg),     /* PHP_RINIT - Request initialization */
-    PHP_RSHUTDOWN(php_auto_instr_cfg), /* PHP_RSHUTDOWN - Request shutdown */
+    "php_auto_instr_cfg",          /* Extension name */
+    ext_functions,                 /* zend_function_entry */
+    PHP_MINIT(php_auto_instr_cfg), /* PHP_MINIT - Module initialization */
+    NULL,                          /* PHP_MSHUTDOWN - Module shutdown */
+    PHP_RINIT(php_auto_instr_cfg), /* PHP_RINIT - Request initialization */
+    NULL,                          /* PHP_RSHUTDOWN - Request shutdown */
 
     PHP_MINFO(php_auto_instr_cfg),  /* PHP_MINFO - Module info */
     PHP_PHP_AUTO_INSTR_CFG_VERSION, /* Version */
