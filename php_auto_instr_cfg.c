@@ -67,22 +67,30 @@ struct stack *pop_from_stack(struct stack *current) {
 
 void traverse(struct stack *head) {
   struct stack *current = head;
-  if (current && current->size >= 0) {
-    fwrite("stack:\n", 6, 1, fp);
-  }
+
   int depth = 0;
+  struct stack *prev = current;
   while (current) {
-	if (depth > 1) {
-		break;
-	}
-	++depth;
-    fwrite("\t", sizeof(char), 1, fp);
+    if (depth > 1) {
+      break;
+    }
+    if (depth == 0) {
+      fwrite("child  ::", 9, 1, fp);
+    }
+    if (depth == 1) {
+      fwrite("parent ::", 9, 1, fp);
+    }
+    ++depth;
+
     fwrite(current->function_name, 1, strlen(current->function_name), fp);
     fwrite("\n", sizeof(char), 1, fp);
+    prev = current;
     current = current->next;
   }
-  if (head && head->size >= 0) {
-    fwrite("\n", 1, 1, fp);
+  if (depth == 1) {
+    fwrite("parent ::", 9, 1, fp);
+    fwrite("unknown", 1, strlen("unknown"), fp);
+    fwrite("\n", sizeof(char), 1, fp);
   }
 }
 
