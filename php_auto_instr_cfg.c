@@ -114,7 +114,7 @@ const char *get_function_name(zend_execute_data *execute_data) {
   if (execute_data->func->common.function_name) {
     return strdup(ZSTR_VAL(execute_data->func->common.function_name));
   }
-  return strdup("");
+  return strdup("unknown");
 }
 
 void register_execute_ex() {
