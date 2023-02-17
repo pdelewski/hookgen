@@ -136,28 +136,12 @@ void unregister_execute_ex() {
   fclose(fp);
 }
 
-void update_function_set(const char *function_name) {
-  if (function_name && strlen(function_name) != 0) {
-    zval *val;
-    zend_string *function_name_zend =
-        zend_string_init(function_name, strlen(function_name), 0);
-    if (!zend_hash_exists(&function_set, function_name_zend)) {
-      zval tmp;
-      ZVAL_STR(&tmp, function_name_zend);
-      /* Add the wrapped zend_string to the HashTable */
-      zend_hash_add(&function_set, function_name_zend, &tmp);
-    }
-    zend_string_release(function_name_zend);
-  }
-}
-
 void execute_ex(zend_execute_data *execute_data) {
   const char *function_name;
 
   int argc;
   zval *argv = NULL;
   function_name = get_function_name(execute_data);
-  update_function_set(function_name);
   if (function_name && strlen(function_name) > 0) {
     head = push_on_stack(head, function_name);
   }
@@ -174,7 +158,6 @@ void new_execute_internal(zend_execute_data *execute_data, zval *return_value) {
   int argc;
   zval *argv = NULL;
   function_name = get_function_name(execute_data);
-  update_function_set(function_name);
   if (function_name && strlen(function_name) > 0) {
     head = push_on_stack(head, function_name);
   }
@@ -194,24 +177,6 @@ static PHP_MINIT_FUNCTION(php_auto_instr_cfg) {
   return SUCCESS;
 }
 
-static PHP_MSHUTDOWN_FUNCTION(php_auto_instr_cfg) {
-  //   zend_ulong idx;
-  //   zend_string *key;
-  //   zval *val;
-
-  //   char dump_function_set[20] = "dump_function_set\0";
-  //   fwrite(dump_function_set, 1, strlen(dump_function_set), fp);
-  //   fwrite("\n", sizeof(char), 1, fp);
-  //   ZEND_HASH_FOREACH_KEY_VAL(&function_set, idx, key, val) {
-  //     if (key) {
-  // 		fwrite(ZSTR_VAL(key), 1, strlen(ZSTR_VAL(key)), fp);
-  // 		fwrite("\n", sizeof(char), 1, fp);
-  //     }
-  //   } ZEND_HASH_FOREACH_END();
-  //   unregister_execute_ex();
-  return SUCCESS;
-}
-
 /* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(php_auto_instr_cfg) {
 #if defined(ZTS) && defined(COMPILE_DL_PHP_AUTO_INSTR_CFG)
@@ -221,24 +186,6 @@ PHP_RINIT_FUNCTION(php_auto_instr_cfg) {
   return SUCCESS;
 }
 /* }}} */
-
-PHP_RSHUTDOWN_FUNCTION(php_auto_instr_cfg) {
-  //   zend_ulong idx;
-  //   zend_string *key;
-  //   zval *val;
-
-  //   char dump_function_set[20] = "dump_function_set\0";
-  //   fwrite(dump_function_set, 1, strlen(dump_function_set), fp);
-  //   fwrite("\n", sizeof(char), 1, fp);
-  //   ZEND_HASH_FOREACH_KEY_VAL(&function_set, idx, key, val) {
-  //     if (key) {
-  // 		fwrite(ZSTR_VAL(key), 1, strlen(ZSTR_VAL(key)), fp);
-  // 		fwrite("\n", sizeof(char), 1, fp);
-  //     }
-  //   } ZEND_HASH_FOREACH_END();
-  //   unregister_execute_ex();
-  return SUCCESS;
-}
 
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(php_auto_instr_cfg) {
@@ -251,12 +198,12 @@ PHP_MINFO_FUNCTION(php_auto_instr_cfg) {
 /* {{{ php_auto_instr_cfg_module_entry */
 zend_module_entry php_auto_instr_cfg_module_entry = {
     STANDARD_MODULE_HEADER,
-    "php_auto_instr_cfg",              /* Extension name */
-    ext_functions,                     /* zend_function_entry */
-    PHP_MINIT(php_auto_instr_cfg),     /* PHP_MINIT - Module initialization */
-    PHP_MSHUTDOWN(php_auto_instr_cfg), /* PHP_MSHUTDOWN - Module shutdown */
-    PHP_RINIT(php_auto_instr_cfg),     /* PHP_RINIT - Request initialization */
-    PHP_RSHUTDOWN(php_auto_instr_cfg), /* PHP_RSHUTDOWN - Request shutdown */
+    "php_auto_instr_cfg",          /* Extension name */
+    ext_functions,                 /* zend_function_entry */
+    PHP_MINIT(php_auto_instr_cfg), /* PHP_MINIT - Module initialization */
+    NULL,                          /* PHP_MSHUTDOWN - Module shutdown */
+    PHP_RINIT(php_auto_instr_cfg), /* PHP_RINIT - Request initialization */
+    NULL,                          /* PHP_RSHUTDOWN - Request shutdown */
 
     PHP_MINFO(php_auto_instr_cfg),  /* PHP_MINFO - Module info */
     PHP_PHP_AUTO_INSTR_CFG_VERSION, /* Version */
