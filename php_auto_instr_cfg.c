@@ -75,10 +75,10 @@ void traverse(struct stack *head) {
       break;
     }
     if (depth == 0) {
-      fwrite("child  ::", 9, 1, fp);
+      fwrite("child=", 6, 1, fp);
     }
     if (depth == 1) {
-      fwrite("parent ::", 9, 1, fp);
+      fwrite("paren=", 6, 1, fp);
     }
     ++depth;
 
@@ -88,7 +88,7 @@ void traverse(struct stack *head) {
     current = current->next;
   }
   if (depth == 1) {
-    fwrite("parent ::", 9, 1, fp);
+    fwrite("paren=", 6, 1, fp);
     fwrite("unknown", 1, strlen("unknown"), fp);
     fwrite("\n", sizeof(char), 1, fp);
   }
