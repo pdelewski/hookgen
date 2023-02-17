@@ -170,7 +170,6 @@ void execute_ex(zend_execute_data *execute_data) {
   int argc;
   zval *argv = NULL;
   function_name = get_function_name(execute_data);
-  update_function_set(function_name);
   if (function_name && strlen(function_name) > 0) {
     head = push_on_stack(head, function_name);
   }
@@ -187,7 +186,6 @@ void new_execute_internal(zend_execute_data *execute_data, zval *return_value) {
   int argc;
   zval *argv = NULL;
   function_name = get_function_name(execute_data);
-  update_function_set(function_name);
   if (function_name && strlen(function_name) > 0) {
     head = push_on_stack(head, function_name);
   }
