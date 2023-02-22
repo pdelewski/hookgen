@@ -65,6 +65,10 @@ struct stack *pop_from_stack(struct stack *current) {
   return head;
 }
 
+struct stack* top_stack() {
+    return head;
+}
+
 void traverse(struct stack *head) {
   struct stack *current = head;
   if (current && current->size >= 0) {
@@ -79,6 +83,31 @@ void traverse(struct stack *head) {
   if (head && head->size >= 0) {
     fwrite("\n", 1, 1, fp);
   }
+}
+
+static zend_always_inline char *hp_get_function_name(zend_execute_data *execute_data)
+{
+    zend_function *curr_func;
+    zend_string *real_function_name;
+
+    if (!execute_data) {
+        return NULL;
+    }
+
+    curr_func = execute_data->func;
+
+    if (!curr_func->common.function_name) {
+        return NULL;
+    }
+
+    if (curr_func->common.scope != NULL) {
+        real_function_name = strpprintf(0, "%s::%s", curr_func->common.scope->name->val, ZSTR_VAL(curr_func->common.function_name));
+    } else {
+        real_function_name = zend_string_copy(curr_func->common.function_name);
+    }
+    char* name = strdup(ZSTR_VAL(execute_data->func->common.function_name));
+    zend_string_release(real_function_name);
+    return name;
 }
 
 const char *get_function_name(zend_execute_data *execute_data) {
@@ -111,6 +140,16 @@ const char *get_function_name(zend_execute_data *execute_data) {
   }
   return strdup("unknown");
 }
+
+char *get_http_request_uri(){
+  char *returnstr="";
+  zval *tmp_name;
+  if ((Z_TYPE(PG(http_globals)[TRACK_VARS_SERVER]) == IS_ARRAY || zend_is_auto_global_str(ZEND_STRL("_SERVER"))) &&
+             (tmp_name = zend_hash_str_find(Z_ARRVAL(PG(http_globals)[TRACK_VARS_SERVER]), "REQUEST_URI", sizeof("REQUEST_URI")-1)) != NULL &&
+             Z_TYPE_P(tmp_name) == IS_STRING) {
+             returnstr = Z_STRVAL_P(tmp_name);
+ }
+ return returnstr;}
 
 void register_execute_ex() {
   fp = fopen("functions.log", "w");
@@ -147,6 +186,11 @@ void execute_ex(zend_execute_data *execute_data) {
   }
 
   original_zend_execute_ex(execute_data);
+  char* uri = get_http_request_uri();
+  if (uri && strlen(uri)>0) {
+        fwrite(uri, 1, strlen(uri), fp);
+  }
+
   traverse(head);
   head = pop_from_stack(head);
   free((void *)function_name);
@@ -167,6 +211,10 @@ void new_execute_internal(zend_execute_data *execute_data, zval *return_value) {
   } else {
     execute_internal(execute_data, return_value);
   }
+  char* uri = get_http_request_uri();
+  if (uri && strlen(uri)>0) {
+        fwrite(uri, 1, strlen(uri), fp);
+  }
   traverse(head);
   head = pop_from_stack(head);
   free((void *)function_name);
@@ -182,10 +230,20 @@ PHP_RINIT_FUNCTION(php_auto_instr_cfg) {
 #if defined(ZTS) && defined(COMPILE_DL_PHP_AUTO_INSTR_CFG)
   ZEND_TSRMLS_CACHE_UPDATE();
 #endif
-
+   fwrite("!!req\n", 6, 1, fp);
+  char* uri = get_http_request_uri();
+  if (uri && strlen(uri)>0) {
+        fwrite(uri, 1, strlen(uri), fp);
+  }
   return SUCCESS;
 }
 /* }}} */
+
+PHP_RSHUTDOWN_FUNCTION(php_auto_instr_cfg) {
+  fwrite("$$end\n", 6, 1, fp);
+  return SUCCESS;
+}
+
 
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(php_auto_instr_cfg) {
@@ -203,7 +261,7 @@ zend_module_entry php_auto_instr_cfg_module_entry = {
     PHP_MINIT(php_auto_instr_cfg), /* PHP_MINIT - Module initialization */
     NULL,                          /* PHP_MSHUTDOWN - Module shutdown */
     PHP_RINIT(php_auto_instr_cfg), /* PHP_RINIT - Request initialization */
-    NULL,                          /* PHP_RSHUTDOWN - Request shutdown */
+    PHP_RSHUTDOWN(php_auto_instr_cfg),                          /* PHP_RSHUTDOWN - Request shutdown */
 
     PHP_MINFO(php_auto_instr_cfg),  /* PHP_MINFO - Module info */
     PHP_PHP_AUTO_INSTR_CFG_VERSION, /* Version */
