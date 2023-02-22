@@ -230,11 +230,13 @@ PHP_RINIT_FUNCTION(php_auto_instr_cfg) {
 #if defined(ZTS) && defined(COMPILE_DL_PHP_AUTO_INSTR_CFG)
   ZEND_TSRMLS_CACHE_UPDATE();
 #endif
-   fwrite("!!req\n", 6, 1, fp);
+   fwrite("!!req:", 6, 1, fp);
   char* uri = get_http_request_uri();
   if (uri && strlen(uri)>0) {
         fwrite(uri, 1, strlen(uri), fp);
   }
+   fwrite("\n", 1, 1, fp);
+
   return SUCCESS;
 }
 /* }}} */
