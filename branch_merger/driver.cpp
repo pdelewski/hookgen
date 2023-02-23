@@ -64,14 +64,17 @@ CallGraph merge_branches(const branches_t &branches) {
   return result;
 }
 
-void traverse_graph(const CallGraph &graph, int &depth) {
+void traverse_graph(const CallGraph &graph, int &depth, int depthLimit) {
+  if (depthLimit > -1 && depth > depthLimit) {
+    return;
+  }
   for (auto it = graph.begin(); it != graph.end(); it++) {
     for (int i = 0; i != depth; ++i) {
       std::cout << "  ";
     }
-    std::cout << it->first << std::endl;
+    std::cout << "|-" << it->first << std::endl;
     ++depth;
-    traverse_graph(it->second.children, depth);
+    traverse_graph(it->second.children, depth, depthLimit);
     --depth;
   }
 }
@@ -87,17 +90,18 @@ void test() {
   branch_t b2 = {"a", "c", "c"};
   merge_subtree(copy, b1);
   merge_subtree(copy, b2);
-  traverse_graph(copy, depth);
+  traverse_graph(copy, depth, -1);
 }
 
 int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    std::cerr << "driver filename" << std::endl;
+  if (argc < 3) {
+    std::cerr << "driver filename depth" << std::endl;
     return -1;
   }
   std::ifstream in(argv[1]);
   if (!in.is_open()) {
-    throw 1;
+    std::cerr << "error : file not found" << std::endl;
+    return -1;
   }
   std::cout << argv[1] << std::endl;
   std::string line;
@@ -116,6 +120,6 @@ int main(int argc, char *argv[]) {
   }
   auto mergedGraph = merge_branches(branches);
   int depth = 0;
-  traverse_graph(mergedGraph, depth);
+  traverse_graph(mergedGraph, depth, std::stoi(argv[2]));
   return 0;
 }
