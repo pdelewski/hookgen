@@ -12,9 +12,14 @@ function clicked() {
     array.push(checkboxes[i].id)
   }
   if (checkboxes.length > 0) {
-      var code = '  function ';
-      code = code + array[0] + '()' + '{}';
-      var value = hljs.highlight(code, {language: 'php'}).value
+      var value = '';
+      var code = '';
+      for(var i = 0; i < array.length; i++) {
+         code = code + '  function ';
+         code = code + array[i] + '()' + '{}\n';
+      }
+
+      value = hljs.highlight(code, {language: 'php'}).value
       document.getElementById('code_content').innerHTML="<pre><code class=\"language-php\">" + value + "</code></pre>";
   } else {
    var value = '';
