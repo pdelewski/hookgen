@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -93,6 +94,62 @@ void test() {
   traverse_graph(copy, depth, -1);
 }
 
+void generate_left_content(std::ofstream &out, const CallGraph &graph,
+                           int &depth, int depthLimit) {
+  if (depthLimit > -1 && depth > depthLimit) {
+    return;
+  }
+
+  for (auto it = graph.begin(); it != graph.end(); it++) {
+    if (it->first.empty()) {
+      generate_left_content(out, it->second.children, depth, depthLimit);
+      continue;
+    }
+    out << "\n<tr>";
+    out << "\n<td>";
+    for (int i = 0; i != depth; ++i) {
+      out << "&nbsp;&nbsp;";
+    }
+    out << "\n<input type=\"checkbox\" id=\"" << it->first
+        << "\" onchange=\"clicked()\" />";
+    out << "" << it->first << "";
+    out << "</td>";
+    out << "\n</tr>";
+    ++depth;
+    generate_left_content(out, it->second.children, depth, depthLimit);
+    --depth;
+  }
+}
+
+void generate_left(std::ofstream &out, const CallGraph &graph, int &depth,
+                   int depthLimit) {
+  out << "\n<div class=\"left\">";
+  out << "\n<h1>CallGraph</h1>";
+  out << "\n<table>";
+  generate_left_content(out, graph, depth, depthLimit);
+  out << "\n</table>";
+  out << "\n</div>";
+}
+
+void generate_right(std::ofstream &out) {
+  out << "\n<div class=\"right\">";
+  out << "\n<h1>CodeView</h1>";
+  out << "\n</div>";
+}
+
+void generate_html(const CallGraph &graph, int &depth, int depthLimit) {
+  std::ifstream in("lib/head_content");
+  std::stringstream buffer;
+  buffer << in.rdbuf();
+  std::ofstream out("index_.html");
+  out << buffer.str();
+  out << "\n<body>\n";
+  generate_left(out, graph, depth, depthLimit);
+  generate_right(out);
+  out << "\n</body>";
+  out << "\n</html>";
+}
+
 int main(int argc, char *argv[]) {
   if (argc < 3) {
     std::cerr << "driver filename depth" << std::endl;
@@ -121,5 +178,6 @@ int main(int argc, char *argv[]) {
   auto mergedGraph = merge_branches(branches);
   int depth = 0;
   traverse_graph(mergedGraph, depth, std::stoi(argv[2]));
+  generate_html(mergedGraph, depth, std::stoi(argv[2]));
   return 0;
 }

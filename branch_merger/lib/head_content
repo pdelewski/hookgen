@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<script type="text/javascript">
+function clicked() {
+  var array = []
+  var checkboxes = document.querySelectorAll('input[type=checkbox]:checked')
+
+  for (var i = 0; i < checkboxes.length; i++) {
+    array.push(checkboxes[i].id)
+  }
+  alert(array);
+}
+</script>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+   body {
+      font-family: Courier;
+      color: white;
+   }
+   h1{
+      padding:20px;
+   }
+   .left,.right {
+      height: 100%;
+      width: 50%;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      overflow-x: hidden;
+      padding-top: 5px;
+      overflow-x: auto;
+      white-space: nowrap;
+   }
+   .left {
+      left: 0;
+      background-color: rgb(99, 109, 131);
+   }
+   .right {
+      right: 0;
+      background-color: rgb(40, 44, 52);
+   }
+   .centered {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+   }
+   .centered img {
+      width: 150px;
+      border-radius: 50%;
+   }
+
+</style>
+</head>
