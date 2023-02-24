@@ -13,12 +13,20 @@ function clicked() {
   }
   if (checkboxes.length > 0) {
       var value = '';
-      var code = '';
+      var code = '  ?php\n\n';
+      code = code + '  declare(strict_types=1);\n\n';
+      code = code + '  namespace OpenTelemetry\Contrib\Instrumentation\X\n\n';
+      code = code + '  class XInstrumentation\n';
+      code = code + '  {\n';
+      code = code + '    public static function register(): void\n';
+      code = code + '    {\n';
+      code = code + '      $instrumentation = new CachedInstrumentation(\'io.opentelemetry.contrib.php.x\');\n';
       for(var i = 0; i < array.length; i++) {
-         code = code + '  function ';
+         code = code + '      function ';
          code = code + array[i] + '()' + '{}\n';
       }
-
+      code = code + '    }\n';
+      code = code + '  }\n';
       value = hljs.highlight(code, {language: 'php'}).value
       document.getElementById('code_content').innerHTML="<pre><code class=\"language-php\">" + value + "</code></pre>";
   } else {
