@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
-
+<link rel="stylesheet" href="./lib/default.min.css">
+<script src="./lib/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
 <script type="text/javascript">
 function clicked() {
   var array = []
@@ -9,7 +11,15 @@ function clicked() {
   for (var i = 0; i < checkboxes.length; i++) {
     array.push(checkboxes[i].id)
   }
-  alert(array);
+  if (checkboxes.length > 0) {
+      var code = '  function ';
+      code = code + array[0] + '()' + '{}';
+      var value = hljs.highlight(code, {language: 'php'}).value
+      document.getElementById('code_content').innerHTML="<pre><code class=\"language-php\">" + value + "</code></pre>";
+  } else {
+   var value = '';
+   document.getElementById('code_content').innerHTML="<pre><code class=\"language-php\">" + value + "</code></pre>";
+  }
 }
 </script>
 <head>
@@ -17,7 +27,6 @@ function clicked() {
 <style>
    body {
       font-family: Courier;
-      color: white;
    }
    h1{
       padding:20px;
@@ -35,11 +44,13 @@ function clicked() {
    }
    .left {
       left: 0;
-      background-color: rgb(99, 109, 131);
+      background-color: rgb(70, 69, 76);
+      color: white;
    }
    .right {
       right: 0;
-      background-color: rgb(40, 44, 52);
+      background-color: rgb(221, 226, 235);
+      color: black;
    }
    .centered {
       position: absolute;

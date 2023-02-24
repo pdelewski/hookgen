@@ -106,14 +106,14 @@ void generate_left_content(std::ofstream &out, const CallGraph &graph,
       continue;
     }
     out << "\n<tr>";
-    out << "\n<td>";
+    out << "\n  <td>";
     for (int i = 0; i != depth; ++i) {
       out << "&nbsp;&nbsp;";
     }
-    out << "\n<input type=\"checkbox\" id=\"" << it->first
+    out << "\n    <input type=\"checkbox\" id=\"" << it->first
         << "\" onchange=\"clicked()\" />";
     out << "" << it->first << "";
-    out << "</td>";
+    out << "  </td>";
     out << "\n</tr>";
     ++depth;
     generate_left_content(out, it->second.children, depth, depthLimit);
@@ -134,6 +134,8 @@ void generate_left(std::ofstream &out, const CallGraph &graph, int &depth,
 void generate_right(std::ofstream &out) {
   out << "\n<div class=\"right\">";
   out << "\n<h1>CodeView</h1>";
+  out << "\n<div id=code_content>";
+  out << "\n</div>";
   out << "\n</div>";
 }
 
