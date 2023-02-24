@@ -140,7 +140,7 @@ void generate_right(std::ofstream &out) {
 }
 
 void generate_html(const CallGraph &graph, int &depth, int depthLimit) {
-  std::ifstream in("lib/head_content");
+  std::ifstream in("lib/head_content.html");
   std::stringstream buffer;
   buffer << in.rdbuf();
   std::ofstream out("index_.html");
