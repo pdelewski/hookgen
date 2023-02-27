@@ -28,6 +28,19 @@ function getFuncName(fullFuncName) {
    }
    return fullFuncName;
 }
+
+function genUseStatements(fullFuncName) {
+   var code = '  use OpenTelemetry\API\Common\Instrumentation\CachedInstrumentation\n';
+   code += '  use OpenTelemetry\API\Trace\Span\n';
+   code += '  use OpenTelemetry\API\Trace\SpanBuilderInterface\n';
+   code += '  use OpenTelemetry\API\Trace\StatusCode\n';
+   code += '  use OpenTelemetry\Context\Context\n';
+   code += '  use function OpenTelemetry\Instrumentation\hook\n';
+   code += '  use OpenTelemetry\SemConv\TraceAttributes\n';
+   code += '  use Throwable;\n';
+   return code;
+}
+
 function injectBody(fullFuncName) {
    var code = '\n';
    code += '      hook(\n';
@@ -74,19 +87,21 @@ function clicked() {
   if (checkboxes.length > 0) {
       var value = '';
       var code = '  ?php\n\n';
-      code = code + '  declare(strict_types=1);\n\n';
-      code = code + '  namespace OpenTelemetry\Contrib\Instrumentation\X\n\n';
-      code = code + '  class XInstrumentation\n';
-      code = code + '  {\n';
-      code = code + '    public static function register(): void\n';
-      code = code + '    {\n';
-      code = code + '      $instrumentation = new CachedInstrumentation(\'io.opentelemetry.contrib.php.x\');\n';
+      code += '  declare(strict_types=1);\n\n';
+      code += genUseStatements('');
+      code += '\n';
+      code += '  namespace OpenTelemetry\Contrib\Instrumentation\X\n\n';
+      code += '  class XInstrumentation\n';
+      code += '  {\n';
+      code += '    public static function register(): void\n';
+      code += '    {\n';
+      code += '      $instrumentation = new CachedInstrumentation(\'io.opentelemetry.contrib.php.x\');\n';
       for(var i = 0; i < array.length; i++) {
-         code = code + injectBody(array[i]);
-         code = code + '\n';
+         code += injectBody(array[i]);
+         code += '\n';
       }
-      code = code + '    }\n';
-      code = code + '  }\n';
+      code += '    }\n';
+      code += '  }\n';
       value = hljs.highlight(code, {language: 'php'}).value
       document.getElementById('code_content').innerHTML="<pre><code class=\"language-php\">" + value + "</code></pre>";
   } else {
