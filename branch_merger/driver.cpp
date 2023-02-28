@@ -71,9 +71,13 @@ void traverse_graph(const CallGraph &graph, int &depth, int depthLimit) {
   }
   for (auto it = graph.begin(); it != graph.end(); it++) {
     for (int i = 0; i != depth; ++i) {
-      std::cout << "  ";
+      if (depth > 1) {
+        std::cout << "  ";
+      }
     }
-    std::cout << "|-" << it->first << std::endl;
+    if (depth > 1) {
+      std::cout << "|-" << it->first << std::endl;
+    }
     ++depth;
     traverse_graph(it->second.children, depth, depthLimit);
     --depth;
@@ -105,16 +109,18 @@ void generate_left_content(std::ofstream &out, const CallGraph &graph,
       generate_left_content(out, it->second.children, depth, depthLimit);
       continue;
     }
-    out << "\n<tr>";
-    out << "\n  <td>";
-    for (int i = 0; i != depth; ++i) {
-      out << "&nbsp;&nbsp;";
+    if (depth > 1) {
+      out << "\n<tr>";
+      out << "\n  <td>";
+      for (int i = 1; i != depth; ++i) {
+        out << "&nbsp;&nbsp;";
+      }
+      out << "\n    <input type=\"checkbox\" id=\"" << it->first
+          << "\" onchange=\"clicked()\" />";
+      out << "" << it->first << "";
+      out << "  </td>";
+      out << "\n</tr>";
     }
-    out << "\n    <input type=\"checkbox\" id=\"" << it->first
-        << "\" onchange=\"clicked()\" />";
-    out << "" << it->first << "";
-    out << "  </td>";
-    out << "\n</tr>";
     ++depth;
     generate_left_content(out, it->second.children, depth, depthLimit);
     --depth;
