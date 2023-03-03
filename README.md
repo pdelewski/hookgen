@@ -1,6 +1,7 @@
-# HookGen
+# HookGen (WIP)
 
-This is an experimental developer tool that dumps stack trace for each function call.
+This is an experimental development tool that dumps stack trace for each function call. It's uses
+dynamic analysis (at runtime) and possibly static analysis in future to combine best of both.
 
 ## Building
 
