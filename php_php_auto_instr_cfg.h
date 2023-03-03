@@ -1,15 +1,15 @@
-/* php_auto_instr_cfg extension for PHP */
+/* hookgen extension for PHP */
 
-#ifndef PHP_PHP_AUTO_INSTR_CFG_H
-#define PHP_PHP_AUTO_INSTR_CFG_H
+#ifndef PHP_HOOKGEN_H
+#define PHP_HOOKGEN_H
 
-extern zend_module_entry php_auto_instr_cfg_module_entry;
-#define phpext_php_auto_instr_cfg_ptr &php_auto_instr_cfg_module_entry
+extern zend_module_entry hookgen_module_entry;
+#define phpext_hookgen_ptr &hookgen_module_entry
 
-#define PHP_PHP_AUTO_INSTR_CFG_VERSION "0.1.0"
+#define PHP_HOOKGEN_VERSION "0.1.0"
 
-#if defined(ZTS) && defined(COMPILE_DL_PHP_AUTO_INSTR_CFG)
+#if defined(ZTS) && defined(COMPILE_DL_HOOKGEN)
 ZEND_TSRMLS_CACHE_EXTERN()
 #endif
 
-#endif /* PHP_PHP_AUTO_INSTR_CFG_H */
+#endif /* PHP_HOOKGEN_H */

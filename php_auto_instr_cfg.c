@@ -172,14 +172,14 @@ void new_execute_internal(zend_execute_data *execute_data, zval *return_value) {
   free((void *)function_name);
 }
 
-static PHP_MINIT_FUNCTION(php_auto_instr_cfg) {
+static PHP_MINIT_FUNCTION(hookgen) {
   register_execute_ex();
   return SUCCESS;
 }
 
 /* {{{ PHP_RINIT_FUNCTION */
-PHP_RINIT_FUNCTION(php_auto_instr_cfg) {
-#if defined(ZTS) && defined(COMPILE_DL_PHP_AUTO_INSTR_CFG)
+PHP_RINIT_FUNCTION(hookgen) {
+#if defined(ZTS) && defined(COMPILE_DL_HOOKGEN)
   ZEND_TSRMLS_CACHE_UPDATE();
 #endif
 
@@ -188,31 +188,31 @@ PHP_RINIT_FUNCTION(php_auto_instr_cfg) {
 /* }}} */
 
 /* {{{ PHP_MINFO_FUNCTION */
-PHP_MINFO_FUNCTION(php_auto_instr_cfg) {
+PHP_MINFO_FUNCTION(hookgen) {
   php_info_print_table_start();
-  php_info_print_table_header(2, "php_auto_instr_cfg support", "enabled");
+  php_info_print_table_header(2, "hookgen support", "enabled");
   php_info_print_table_end();
 }
 /* }}} */
 
-/* {{{ php_auto_instr_cfg_module_entry */
-zend_module_entry php_auto_instr_cfg_module_entry = {
+/* {{{ hookgen_module_entry */
+zend_module_entry hookgen_module_entry = {
     STANDARD_MODULE_HEADER,
-    "php_auto_instr_cfg",          /* Extension name */
+    "hookgen",          /* Extension name */
     ext_functions,                 /* zend_function_entry */
-    PHP_MINIT(php_auto_instr_cfg), /* PHP_MINIT - Module initialization */
+    PHP_MINIT(hookgen), /* PHP_MINIT - Module initialization */
     NULL,                          /* PHP_MSHUTDOWN - Module shutdown */
-    PHP_RINIT(php_auto_instr_cfg), /* PHP_RINIT - Request initialization */
+    PHP_RINIT(hookgen), /* PHP_RINIT - Request initialization */
     NULL,                          /* PHP_RSHUTDOWN - Request shutdown */
 
-    PHP_MINFO(php_auto_instr_cfg),  /* PHP_MINFO - Module info */
-    PHP_PHP_AUTO_INSTR_CFG_VERSION, /* Version */
+    PHP_MINFO(hookgen),  /* PHP_MINFO - Module info */
+    PHP_HOOKGEN_VERSION, /* Version */
     STANDARD_MODULE_PROPERTIES};
 /* }}} */
 
-#ifdef COMPILE_DL_PHP_AUTO_INSTR_CFG
+#ifdef COMPILE_DL_HOOKGEN
 #ifdef ZTS
 ZEND_TSRMLS_CACHE_DEFINE()
 #endif
-ZEND_GET_MODULE(php_auto_instr_cfg)
+ZEND_GET_MODULE(hookgen)
 #endif
