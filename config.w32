@@ -1,7 +1,7 @@
-ARG_ENABLE('php_auto_instr_cfg', 'php_auto_instr_cfg support', 'no');
+ARG_ENABLE('hookgen', 'hookgen support', 'no');
 
-if (PHP_PHP_AUTO_INSTR_CFG != 'no') {
-	AC_DEFINE('HAVE_PHP_AUTO_INSTR_CFG', 1, 'php_auto_instr_cfg support enabled');
+if (PHP_HOOKGEN != 'no') {
+	AC_DEFINE('HAVE_HOOKGEN', 1, 'hookgen support enabled');
 
-	EXTENSION('php_auto_instr_cfg', 'php_auto_instr_cfg.c', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1');
+	EXTENSION('hookgen', 'hookgen.c', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1');
 }

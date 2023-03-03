@@ -1,4 +1,4 @@
-/* php_auto_instr_cfg extension for PHP */
+/* hookgen extension for PHP */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -6,8 +6,8 @@
 
 #include "php.h"
 #include "ext/standard/info.h"
-#include "php_auto_instr_cfg_arginfo.h"
-#include "php_php_auto_instr_cfg.h"
+#include "hookgen_arginfo.h"
+#include "php_hookgen.h"
 
 /* For compatibility with older PHP versions */
 #ifndef ZEND_PARSE_PARAMETERS_NONE
